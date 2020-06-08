@@ -1,0 +1,37 @@
+{
+  "name": "frontend-project-lvl2",
+  "version": "1.0.0",
+  "description": "Compares two configuration files and shows a difference.",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "NODE_ENV=production babel src --out-dir dist",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexSmkh/frontend-project-lvl2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alexSmkh/frontend-project-lvl2/issues"
+  },
+  "homepage": "https://github.com/alexSmkh/frontend-project-lvl2#readme",
+  "dependencies": {
+    "commander": "^5.1.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.10.1",
+    "@babel/core": "^7.10.2",
+    "@babel/node": "^7.10.1",
+    "@babel/preset-env": "^7.10.2",
+    "eslint": "^7.2.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "cli tool",
+    "file differences"
+  ]
+}
