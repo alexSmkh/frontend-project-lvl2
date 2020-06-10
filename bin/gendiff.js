@@ -8,7 +8,7 @@ program
   .description('Compares two configuration files and shows a difference.')
   .option('-f, --format <type>', 'output format')
   .arguments('<filepath1> <filepath2>')
-  .action((filepath1, filepath2, options) => {
-    fn(options.format, filepath1, filepath2);
+  .action((filepath1, filepath2) => {
+    fn(filepath1, filepath2);
   })
   .parse(process.argv);
