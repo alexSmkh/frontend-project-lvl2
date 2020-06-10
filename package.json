@@ -17,6 +17,10 @@
   },
   "author": "",
   "license": "ISC",
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {}
+  },
   "bugs": {
     "url": "https://github.com/alexSmkh/frontend-project-lvl2/issues"
   },
