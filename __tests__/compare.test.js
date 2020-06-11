@@ -1,5 +1,4 @@
 /* eslint-disable no-underscore-dangle */
-import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import gendiff from '../src/index';
