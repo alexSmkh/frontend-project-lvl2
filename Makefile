@@ -10,7 +10,7 @@ test-coverage:
 	npm test -- --coverage --coverageProvider=v8
 
 gendiff:
-	node bin/gendiff.js
+	npx babel-node bin/gendiff.js $(ARGS)
 
 publish:
 	npm publish --dry-run
