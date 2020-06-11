@@ -2,6 +2,14 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import _ from 'lodash';
+import { parseJson, parseYaml } from './parsers.js';
+
+const parseFuncs = {
+  json: parseJson,
+  yaml: parseYaml,
+};
+
+const getFileExtension = (filepath) => path.extname(filepath).split('.').pop();
 
 const compareObjects = (object1, object2) => {
   const allKeys = _.flattenDeep([object1, object2].map(Object.keys));
@@ -25,9 +33,9 @@ const compareObjects = (object1, object2) => {
 };
 
 export default (filepath1, filepath2) => {
-  const objectsFromJson = [filepath1, filepath2]
+  const objectsFromFiles = [filepath1, filepath2]
     .map((filepath) => path.resolve(process.cwd(), filepath))
-    .map((absoluteFilepath) => fs.readFileSync(absoluteFilepath, 'utf-8'))
-    .map(JSON.parse);
-  return compareObjects(...objectsFromJson);
+    .map((absolutePath) => [fs.readFileSync(absolutePath, 'utf-8'), getFileExtension(absolutePath)])
+    .map(([fileData, fileExtension]) => parseFuncs[fileExtension](fileData));
+  return compareObjects(...objectsFromFiles);
 };
