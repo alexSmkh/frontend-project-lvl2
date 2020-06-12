@@ -13,6 +13,8 @@ let absolutePathForBeforeJson;
 let absolutePathForAfterJson;
 let relativePathForBeforeYaml;
 let relativePathForAfterYaml;
+let relativePathForAfterIni;
+let relativePathForBeforeIni;
 
 beforeAll(() => {
   relativePathForBeforeJson = '__fixtures__/before.json';
@@ -20,6 +22,8 @@ beforeAll(() => {
   relativePathForEmptyJson = '__fixtures__/empty.json';
   relativePathForBeforeYaml = '__fixtures__/before.yaml';
   relativePathForAfterYaml = '__fixtures__/after.yaml';
+  relativePathForAfterIni = '__fixtures__/after.ini';
+  relativePathForBeforeIni = '__fixtures__/before.ini';
   absolutePathForBeforeJson = `${__dirname}/../${relativePathForBeforeJson}`;
   absolutePathForAfterJson = `${__dirname}/../${relativePathForAfterJson}`;
 });
@@ -29,6 +33,7 @@ test('comparing two objects with relative/absolute paths', () => {
   expect(gendiff(relativePathForBeforeJson, relativePathForAfterJson)).toEqual(expectedResult);
   expect(gendiff(absolutePathForBeforeJson, absolutePathForAfterJson)).toEqual(expectedResult);
   expect(gendiff(relativePathForBeforeYaml, relativePathForAfterYaml)).toEqual(expectedResult);
+  expect(gendiff(relativePathForBeforeIni, relativePathForAfterIni)).toEqual(expectedResult);
 });
 
 test('comparing an object with an empty object', () => {
