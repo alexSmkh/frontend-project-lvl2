@@ -1,5 +1,14 @@
 import yamlParser from 'js-yaml';
+import iniParser from 'ini';
 
-export const parseJson = (jsonFile) => JSON.parse(jsonFile);
+const parseJson = (jsonFile) => JSON.parse(jsonFile);
 
-export const parseYaml = (yamlFile) => yamlParser.safeLoad(yamlFile);
+const parseYaml = (yamlFile) => yamlParser.safeLoad(yamlFile);
+
+const parseIni = (iniFile) => iniParser.parse(iniFile);
+
+export default {
+  json: parseJson,
+  ini: parseIni,
+  yaml: parseYaml,
+};

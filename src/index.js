@@ -2,12 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import _ from 'lodash';
-import { parseJson, parseYaml } from './parsers.js';
-
-const parseFuncs = {
-  json: parseJson,
-  yaml: parseYaml,
-};
+import parseFuncs from './parsers.js';
 
 const getFileExtension = (filepath) => path.extname(filepath).split('.').pop();
 
