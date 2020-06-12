@@ -6,11 +6,11 @@ install-deps:
 test:
 	npm test
 
+watch:
+	npx -n --experimental-vm-modules  jest --watch
+
 test-coverage:
 	npm test -- --coverage --coverageProvider=v8
-
-gendiff:
-	npx babel-node bin/gendiff.js $(ARGS)
 
 publish:
 	npm publish --dry-run
