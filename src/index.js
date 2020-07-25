@@ -1,36 +1,67 @@
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
-import _ from 'lodash';
+import lodash from 'lodash';
 import parseFuncs from './parsers.js';
+import getFormatter from './formatters/main.js';
+
+const {
+  isPlainObject, isEqual, flatten, union,
+} = lodash;
+
 
 const getFileExtension = (filepath) => path.extname(filepath).split('.').pop();
 
-const compareObjects = (object1, object2) => {
-  const allKeys = _.flattenDeep([object1, object2].map(Object.keys));
-  const uniqKeys = _.uniq((allKeys));
-  return uniqKeys
-    .reduce((acc, key) => {
-      if (_.has(object1, key) && _.has(object2, key)) {
-        if (object1[key] === object2[key]) {
-          acc.push(`  ${key}: ${object1[key]}`);
-        } else {
-          acc.push(`+ ${key}: ${object2[key]}\n- ${key}: ${object1[key]}`);
-        }
-      } else if (_.has(object2, key)) {
-        acc.push(`+ ${key}: ${object2[key]}`);
-      } else {
-        acc.push(`- ${key}: ${object1[key]}`);
-      }
-      return acc;
-    }, [])
-    .join('\n');
+const typesOfChanges = [
+  {
+    typeOfChange: 'unchanged',
+    check: (previousValue, currentValue) => isEqual(previousValue, currentValue),
+  },
+  {
+    typeOfChange: 'added',
+    check: (previousValue) => previousValue === undefined,
+  },
+  {
+    typeOfChange: 'removed',
+    check: (_, currentValue) => currentValue === undefined,
+  },
+  {
+    typeOfChange: 'complex',
+    check: (previousValue, currentValue) => (
+      isPlainObject(previousValue) && isPlainObject(currentValue)
+    ),
+  },
+  {
+    typeOfChange: 'changed',
+    check: (previousValue, currentValue) => !isEqual(previousValue, currentValue),
+  },
+];
+
+const buildAst = (objs) => {
+  const [previousObj, currentObj] = objs;
+  const keys = union(flatten(objs.map(Object.keys)));
+  return keys.reduce((acc, key) => {
+    const previousValue = previousObj[key];
+    const currentValue = currentObj[key];
+    const { typeOfChange } = typesOfChanges.find(({ check }) => check(previousValue, currentValue));
+    if (typeOfChange === 'complex') {
+      return {
+        ...acc,
+        [key]: {
+          typeOfChange: 'complex',
+          currentValue: buildAst([previousValue, currentValue]),
+        },
+      };
+    }
+    return { ...acc, [key]: { typeOfChange, previousValue, currentValue } };
+  }, {});
 };
 
-export default (filepath1, filepath2) => {
+export default (filepath1, filepath2, format) => {
   const objectsFromFiles = [filepath1, filepath2]
     .map((filepath) => path.resolve(process.cwd(), filepath))
     .map((absolutePath) => [fs.readFileSync(absolutePath, 'utf-8'), getFileExtension(absolutePath)])
     .map(([fileData, fileExtension]) => parseFuncs[fileExtension](fileData));
-  return compareObjects(...objectsFromFiles);
+  const ast = buildAst(objectsFromFiles);
+  return getFormatter(format)(ast);
 };
