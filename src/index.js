@@ -3,7 +3,7 @@ import path from 'path';
 import process from 'process';
 import lodash from 'lodash';
 import parseFuncs from './parsers.js';
-import getFormatter from './formatters/main.js';
+import getFormatter from './formatters/index.js';
 
 const {
   isPlainObject, isEqual, flatten, union,
