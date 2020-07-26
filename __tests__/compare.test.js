@@ -17,6 +17,7 @@ let afterIniPath;
 let beforeIniPath;
 let result;
 let nestedResult;
+let stylishFormat;
 
 beforeAll(() => {
   beforeJsonPath = '__fixtures__/nestedBefore.json';
@@ -29,14 +30,17 @@ beforeAll(() => {
   absolutePathForAfterJson = `${__dirname}/../${afterJsonPath}`;
   nestedResult = fs.readFileSync('__fixtures__/resultForNested.txt', 'utf-8');
   result = fs.readFileSync('__fixtures__/result.txt', 'utf-8');
+  stylishFormat = 'stylish';
 });
 
 test('comparing files with absolute paths', () => {
-  expect(gendiff(absolutePathForBeforeJson, absolutePathForAfterJson)).toEqual(nestedResult);
+  expect(
+    gendiff(absolutePathForBeforeJson, absolutePathForAfterJson, stylishFormat),
+  ).toEqual(nestedResult);
 });
 
 test('comparing json/yaml/ini files', () => {
-  expect(gendiff(beforeJsonPath, afterJsonPath)).toEqual(nestedResult);
-  expect(gendiff(beforeYamlPath, afterYamlPath)).toEqual(nestedResult);
-  expect(gendiff(beforeIniPath, afterIniPath)).toEqual(result);
+  expect(gendiff(beforeJsonPath, afterJsonPath, stylishFormat)).toEqual(nestedResult);
+  expect(gendiff(beforeYamlPath, afterYamlPath, stylishFormat)).toEqual(nestedResult);
+  expect(gendiff(beforeIniPath, afterIniPath, stylishFormat)).toEqual(result);
 });
