@@ -9,52 +9,45 @@ const {
   isPlainObject, isEqual, flatten, union,
 } = lodash;
 
-
 const getFileExtension = (filepath) => path.extname(filepath).split('.').pop();
 
-const typesOfChanges = [
+const nodes = [
   {
-    typeOfChange: 'unchanged',
     check: (previousValue, currentValue) => isEqual(previousValue, currentValue),
+    makeNode: (key, _, value) => ({ key, typeOfChange: 'unchanged', value }),
   },
   {
-    typeOfChange: 'added',
     check: (previousValue) => previousValue === undefined,
+    makeNode: (key, _, value) => ({ key, typeOfChange: 'added', value }),
   },
   {
-    typeOfChange: 'removed',
     check: (_, currentValue) => currentValue === undefined,
+    makeNode: (key, value) => ({ key, typeOfChange: 'removed', value }),
   },
   {
-    typeOfChange: 'complex',
     check: (previousValue, currentValue) => (
       isPlainObject(previousValue) && isPlainObject(currentValue)
     ),
+    makeNode: (key, previousValue, currentValue, func) => (
+      { key, typeOfChange: 'updatedObject', value: func(previousValue, currentValue) }
+    ),
   },
   {
-    typeOfChange: 'changed',
     check: (previousValue, currentValue) => !isEqual(previousValue, currentValue),
+    makeNode: (key, previousValue, currentValue) => (
+      { key, typeOfChange: 'updated', value: [previousValue, currentValue] }
+    ),
   },
 ];
 
-const buildAst = (objs) => {
-  const [previousObj, currentObj] = objs;
-  const keys = union(flatten(objs.map(Object.keys)));
+const buildAst = (previousObj, currentObj) => {
+  const keys = union(flatten([previousObj, currentObj].map(Object.keys)));
   return keys.reduce((acc, key) => {
-    const previousValue = previousObj[key];
-    const currentValue = currentObj[key];
-    const { typeOfChange } = typesOfChanges.find(({ check }) => check(previousValue, currentValue));
-    if (typeOfChange === 'complex') {
-      return {
-        ...acc,
-        [key]: {
-          typeOfChange: 'complex',
-          currentValue: buildAst([previousValue, currentValue]),
-        },
-      };
-    }
-    return { ...acc, [key]: { typeOfChange, previousValue, currentValue } };
-  }, {});
+    const previous = previousObj[key];
+    const current = currentObj[key];
+    const { makeNode } = nodes.find(({ check }) => check(previous, current));
+    return [...acc, makeNode(key, previous, current, buildAst)];
+  }, []);
 };
 
 export default (filepath1, filepath2, format) => {
@@ -62,6 +55,6 @@ export default (filepath1, filepath2, format) => {
     .map((filepath) => path.resolve(process.cwd(), filepath))
     .map((absolutePath) => [fs.readFileSync(absolutePath, 'utf-8'), getFileExtension(absolutePath)])
     .map(([fileData, fileExtension]) => parseFuncs[fileExtension](fileData));
-  const ast = buildAst(objectsFromFiles);
+  const ast = buildAst(...objectsFromFiles);
   return getFormatter(format)(ast);
 };
