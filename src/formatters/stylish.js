@@ -2,7 +2,7 @@ import lodash from 'lodash';
 
 const { isPlainObject, isArray } = lodash;
 
-const baseIndent = '  ';
+const baseIndent = '    ';
 
 const formatValue = (value, depth) => {
   if (!isPlainObject(value)) return value;
