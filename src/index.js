@@ -54,7 +54,7 @@ export default (filepath1, filepath2, format) => {
   const objectsFromFiles = [filepath1, filepath2]
     .map((filepath) => path.resolve(process.cwd(), filepath))
     .map((absolutePath) => [fs.readFileSync(absolutePath, 'utf-8'), getFileExtension(absolutePath)])
-    .map(([fileData, fileExtension]) => parseFuncs[fileExtension](fileData));
+    .map(([fileData, fileExtension]) => parseFuncs(fileExtension)(fileData));
   const ast = buildAst(...objectsFromFiles);
   return getFormatter(format)(ast);
 };
