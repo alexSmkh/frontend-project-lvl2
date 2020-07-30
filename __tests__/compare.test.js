@@ -52,3 +52,11 @@ describe('test for the stylish format', () => {
     expect(gendiff(beforeIniPath, afterIniPath, stylishFormat)).toEqual(stylishResult);
   });
 });
+
+describe('test for the plain format', () => {
+  test('comparing json/yaml/ini files', () => {
+    expect(gendiff(beforeJsonPath, afterJsonPath, plainFormat)).toEqual(nestedPlainResult);
+    expect(gendiff(beforeYamlPath, afterYamlPath, plainFormat)).toEqual(nestedPlainResult);
+    expect(gendiff(beforeIniPath, afterIniPath, plainFormat)).toEqual(plainResult);
+  });
+});
