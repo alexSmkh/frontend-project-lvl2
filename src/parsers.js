@@ -16,7 +16,7 @@ const parsers = {
 
 export default (extension) => {
   if (!_.has(parsers, extension)) {
-    const availableFormats = Object.keys(parsers).join(',');
+    const availableFormats = Object.keys(parsers).join(', ');
     throw new Error(`"${extension}" format is not supported!\nAvailable formats: ${availableFormats}.`);
   }
   return parsers[extension];
