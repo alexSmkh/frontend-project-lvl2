@@ -4,7 +4,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/d82a95faac91e54bdedb/maintainability)](https://codeclimate.com/github/alexSmkh/gendiff/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/d82a95faac91e54bdedb/test_coverage)](https://codeclimate.com/github/alexSmkh/gendiff/test_coverage)
 
-Compares two configuration files and shows a difference. The script supports three file formats: _json_, _yaml_ and _ini_.
+Compares two configuration files and shows a difference. The program supports three file formats: _json_, _yaml_ and _ini_.
 
 ### How to install
 
