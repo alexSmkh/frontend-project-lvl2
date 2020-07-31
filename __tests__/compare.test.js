@@ -6,57 +6,26 @@ import gendiff from '../src/index';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+// console.log(`~~~~~~~~~~~~~~~~~${__dirname}`);
 
-let beforeJsonPath;
-let afterJsonPath;
-let absolutePathForBeforeJson;
-let absolutePathForAfterJson;
-let beforeYamlPath;
-let afterYamlPath;
-let afterIniPath;
-let beforeIniPath;
-let plainFormat;
-let stylishFormat;
 let plainResult;
 let stylishResult;
-let nestedStylishResult;
-let nestedPlainResult;
+let formats;
+let beforeAfterFixtures;
 
 beforeAll(() => {
-  beforeJsonPath = '__fixtures__/nestedBefore.json';
-  afterJsonPath = '__fixtures__/nestedAfter.json';
-  beforeYamlPath = '__fixtures__/nestedBefore.yaml';
-  afterYamlPath = '__fixtures__/nestedAfter.yaml';
-  afterIniPath = '__fixtures__/after.ini';
-  beforeIniPath = '__fixtures__/before.ini';
-  absolutePathForBeforeJson = `${__dirname}/../${beforeJsonPath}`;
-  absolutePathForAfterJson = `${__dirname}/../${afterJsonPath}`;
-  plainFormat = 'plain';
-  stylishFormat = 'stylish';
-  nestedStylishResult = fs.readFileSync('__fixtures__/nestedStylishResult.txt', 'utf-8');
-  nestedPlainResult = fs.readFileSync('__fixtures__/nestedPlainResult.txt', 'utf-8');
-  plainResult = fs.readFileSync('__fixtures__/plainResult.txt', 'utf-8');
-  stylishResult = fs.readFileSync('__fixtures__/stylishResult.txt', 'utf-8');
+  stylishResult = fs.readFileSync(`${__dirname}/__fixtures__/stylishResult.txt`, 'utf-8');
+  plainResult = fs.readFileSync(`${__dirname}/__fixtures__/plainResult.txt`, 'utf-8');
+  formats = ['json', 'yaml', 'ini'];
+  beforeAfterFixtures = formats.map((format) => [`${__dirname}/__fixtures__/before.${format}`, `${__dirname}/__fixtures__/after.${format}`]);
 });
 
-describe('test for the stylish format', () => {
-  test('comparing files with absolute paths', () => {
-    expect(
-      gendiff(absolutePathForBeforeJson, absolutePathForAfterJson, stylishFormat),
-    ).toEqual(nestedStylishResult);
+describe('Comparing json/yaml/ini files', () => {
+  test('Test for the stylish format', () => {
+    beforeAfterFixtures.forEach(([before, after]) => expect(gendiff(before, after, 'stylish')).toEqual(stylishResult));
   });
 
-  test('comparing json/yaml/ini files', () => {
-    expect(gendiff(beforeJsonPath, afterJsonPath, stylishFormat)).toEqual(nestedStylishResult);
-    expect(gendiff(beforeYamlPath, afterYamlPath, stylishFormat)).toEqual(nestedStylishResult);
-    expect(gendiff(beforeIniPath, afterIniPath, stylishFormat)).toEqual(stylishResult);
-  });
-});
-
-describe('test for the plain format', () => {
-  test('comparing json/yaml/ini files', () => {
-    expect(gendiff(beforeJsonPath, afterJsonPath, plainFormat)).toEqual(nestedPlainResult);
-    expect(gendiff(beforeYamlPath, afterYamlPath, plainFormat)).toEqual(nestedPlainResult);
-    expect(gendiff(beforeIniPath, afterIniPath, plainFormat)).toEqual(plainResult);
+  test('Test for the plain format', () => {
+    beforeAfterFixtures.forEach(([before, after]) => expect(gendiff(before, after, 'plain')).toEqual(plainResult));
   });
 });
