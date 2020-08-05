@@ -2,16 +2,10 @@ import _ from 'lodash';
 import yamlParser from 'js-yaml';
 import iniParser from 'ini';
 
-const parseJson = (jsonFile) => JSON.parse(jsonFile);
-
-const parseYaml = (yamlFile) => yamlParser.safeLoad(yamlFile);
-
-const parseIni = (iniFile) => iniParser.parse(iniFile);
-
 const parsers = {
-  json: parseJson,
-  ini: parseIni,
-  yaml: parseYaml,
+  json: (jsonFile) => JSON.parse(jsonFile),
+  ini: (iniFile) => iniParser.parse(iniFile),
+  yaml: (yamlFile) => yamlParser.safeLoad(yamlFile),
 };
 
 export default (extension) => {
