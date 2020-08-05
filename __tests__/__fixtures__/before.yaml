@@ -5,6 +5,8 @@ common:
   setting3: true
   setting6:
     key: value
+    doge:
+      wow: too much
 group1:
   baz: bas
   foo: bar
@@ -12,7 +14,5 @@ group1:
     key: value
 group2:
   abc: 12345
-  key:
-    key2: value
-    key3:
-      key4: 4
+  deep:
+    id: 45
