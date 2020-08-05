@@ -1,30 +1,26 @@
 /* eslint-disable no-underscore-dangle */
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
 import fs from 'fs';
 import gendiff from '../src/index';
 
+const fileFormats = ['json', 'yaml', 'ini'];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-let plainResult;
-let stylishResult;
-let formats;
-let beforeAfterFixtures;
-
-beforeAll(() => {
-  stylishResult = fs.readFileSync(`${__dirname}/__fixtures__/stylishResult.txt`, 'utf-8');
-  plainResult = fs.readFileSync(`${__dirname}/__fixtures__/plainResult.txt`, 'utf-8');
-  formats = ['json', 'yaml', 'ini'];
-  beforeAfterFixtures = formats.map((format) => [`${__dirname}/__fixtures__/before.${format}`, `${__dirname}/__fixtures__/after.${format}`]);
-});
+const getFixturePath = (filename) => join(__dirname, '__fixtures__', filename);
 
 describe('Comparing json/yaml/ini files', () => {
-  test('Test for the stylish format', () => {
-    beforeAfterFixtures.forEach(([before, after]) => expect(gendiff(before, after, 'stylish')).toEqual(stylishResult));
+  test.each(fileFormats)('Test for the stylish format. Compare %s files.', (fileFormat) => {
+    const stylishResult = fs.readFileSync(getFixturePath('stylishResult.txt'), 'utf-8');
+    const pathToBeforeFixture = getFixturePath(`before.${fileFormat}`);
+    const pathToAfterFixture = getFixturePath(`after.${fileFormat}`);
+    expect(gendiff(pathToBeforeFixture, pathToAfterFixture, 'stylish')).toEqual(stylishResult);
   });
 
-  test('Test for the plain format', () => {
-    beforeAfterFixtures.forEach(([before, after]) => expect(gendiff(before, after, 'plain')).toEqual(plainResult));
+  test.each(fileFormats)('Compare %s files. Test for the plain format', (fileFormat) => {
+    const plainResult = fs.readFileSync(getFixturePath('plainResult.txt'), 'utf-8');
+    const pathToBeforeFixture = getFixturePath(`before.${fileFormat}`);
+    const pathToAfterFixture = getFixturePath(`after.${fileFormat}`);
+    expect(gendiff(pathToBeforeFixture, pathToAfterFixture, 'plain')).toEqual(plainResult);
   });
 });
