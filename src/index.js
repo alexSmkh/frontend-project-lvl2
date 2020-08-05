@@ -2,14 +2,14 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import lodash from 'lodash';
-import parseFuncs from './parsers.js';
+import getParser from './parsers.js';
 import getFormatter from './formatters/index.js';
 
 const {
   isPlainObject, isEqual, flatten, union,
 } = lodash;
 
-const getFileExtension = (filepath) => path.extname(filepath).split('.').pop();
+const getFileExtension = (filepath) => path.extname(filepath).slice(1);
 
 const nodes = [
   {
@@ -54,7 +54,7 @@ export default (filepath1, filepath2, format) => {
   const objectsFromFiles = [filepath1, filepath2]
     .map((filepath) => path.resolve(process.cwd(), filepath))
     .map((absolutePath) => [fs.readFileSync(absolutePath, 'utf-8'), getFileExtension(absolutePath)])
-    .map(([fileData, fileExtension]) => parseFuncs(fileExtension)(fileData));
+    .map(([fileData, fileExtension]) => getParser(fileExtension)(fileData));
   const ast = buildAst(...objectsFromFiles);
   return getFormatter(format)(ast);
 };
