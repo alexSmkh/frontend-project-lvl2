@@ -12,15 +12,15 @@ const getFixturePath = (filename) => join(__dirname, '__fixtures__', filename);
 describe('Comparing json/yaml/ini files', () => {
   test.each(fileFormats)('Test for the stylish format. Compare %s files.', (fileFormat) => {
     const stylishResult = fs.readFileSync(getFixturePath('stylishResult.txt'), 'utf-8');
-    const pathToBeforeFixture = getFixturePath(`before.${fileFormat}`);
-    const pathToAfterFixture = getFixturePath(`after.${fileFormat}`);
-    expect(gendiff(pathToBeforeFixture, pathToAfterFixture, 'stylish')).toEqual(stylishResult);
+    const pathToFixtureBefore = getFixturePath(`before.${fileFormat}`);
+    const pathToFixtureAfter = getFixturePath(`after.${fileFormat}`);
+    expect(gendiff(pathToFixtureBefore, pathToFixtureAfter, 'stylish')).toEqual(stylishResult);
   });
 
   test.each(fileFormats)('Compare %s files. Test for the plain format', (fileFormat) => {
     const plainResult = fs.readFileSync(getFixturePath('plainResult.txt'), 'utf-8');
-    const pathToBeforeFixture = getFixturePath(`before.${fileFormat}`);
-    const pathToAfterFixture = getFixturePath(`after.${fileFormat}`);
-    expect(gendiff(pathToBeforeFixture, pathToAfterFixture, 'plain')).toEqual(plainResult);
+    const pathToFixtureBefore = getFixturePath(`before.${fileFormat}`);
+    const pathToFixtureAfter = getFixturePath(`after.${fileFormat}`);
+    expect(gendiff(pathToFixtureBefore, pathToFixtureAfter, 'plain')).toEqual(plainResult);
   });
 });
