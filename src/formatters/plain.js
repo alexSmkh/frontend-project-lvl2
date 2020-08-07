@@ -1,25 +1,6 @@
 import lodash from 'lodash';
 
-const { isArray, isPlainObject, flattenDeep } = lodash;
-
-const stringPatterns = [
-  {
-    check: (typeOfChange) => typeOfChange === 'unchanged',
-    makeStringOfChanges: () => '',
-  },
-  {
-    check: (typeOfChange) => typeOfChange === 'updated',
-    makeStringOfChanges: (property, previous, current) => `Property ${property} was updated. From ${previous} to ${current}`,
-  },
-  {
-    check: (typeOfChange) => typeOfChange === 'removed',
-    makeStringOfChanges: (property) => `Property ${property} was removed`,
-  },
-  {
-    check: (typeOfChange) => typeOfChange === 'added',
-    makeStringOfChanges: (property, value) => `Property ${property} was added with value: ${value}`,
-  },
-];
+const { isPlainObject } = lodash;
 
 const formatValue = (value) => {
   if (isPlainObject(value)) return '[complex value]';
@@ -27,24 +8,44 @@ const formatValue = (value) => {
   return value;
 };
 
-const formatProperty = (prop) => (prop ? `'${prop.join('.')}'` : '');
+const renderPath = (path) => (path ? `'${path.join('.')}'` : '');
+
+const stringPatterns = [
+  {
+    check: (type) => type === 'unchanged',
+    makeStringOfChanges: () => '',
+  },
+  {
+    check: (type) => type === 'updated',
+    makeStringOfChanges: (propertyPath, { value }) => {
+      const [valueBefore, valueAfter] = value.map(formatValue);
+      return `Property ${renderPath(propertyPath)} was updated. From ${valueBefore} to ${valueAfter}`;
+    },
+  },
+  {
+    check: (type) => type === 'removed',
+    makeStringOfChanges: (propertyPath) => `Property ${renderPath(propertyPath)} was removed`,
+  },
+  {
+    check: (type) => type === 'added',
+    makeStringOfChanges: (propertyPath, { value }) => `Property ${renderPath(propertyPath)} was added with value: ${formatValue(value)}`,
+  },
+  {
+    check: (type) => type === 'complex',
+    makeStringOfChanges: (propertyPath, { children }, func) => (
+      children.flatMap((child) => func(child, propertyPath))
+    ),
+  },
+];
 
 const render = (ast) => {
   const iter = (node, path) => {
-    const { key, typeOfChange, value } = node;
-    const currentPath = [...path, key];
-    if (typeOfChange === 'updatedObject') {
-      return value.reduce((acc, child) => [...acc, iter(child, currentPath)], []);
-    }
-    const { makeStringOfChanges } = stringPatterns.find(({ check }) => check(typeOfChange));
-    const property = formatProperty(currentPath);
-    if (isArray(value)) {
-      return makeStringOfChanges(property, ...value.map(formatValue));
-    }
-    return makeStringOfChanges(property, formatValue(value));
+    const currentPath = [...path, node.key];
+    const { makeStringOfChanges } = stringPatterns.find(({ check }) => check(node.type));
+    return makeStringOfChanges(currentPath, node, iter);
   };
   const result = ast
-    .reduce((acc, obj) => flattenDeep([...acc, iter(obj, [])]), [])
+    .flatMap((node) => iter(node, []))
     .filter((line) => line !== '');
   return result.join('\n');
 };
