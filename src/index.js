@@ -6,54 +6,55 @@ import getParser from './parsers.js';
 import getFormatter from './formatters/index.js';
 
 const {
-  isPlainObject, isEqual, flatten, union,
+  isPlainObject, isEqual, flatten, union, sortBy,
 } = lodash;
 
 const getFileExtension = (filepath) => path.extname(filepath).slice(1);
 
 const nodes = [
   {
-    check: (previousValue, currentValue) => isEqual(previousValue, currentValue),
-    makeNode: (key, _, value) => ({ key, typeOfChange: 'unchanged', value }),
+    check: (valueBefore, valueAfter) => isEqual(valueBefore, valueAfter),
+    makeNode: (key, _, value) => ({ key, type: 'unchanged', value }),
   },
   {
-    check: (previousValue) => previousValue === undefined,
-    makeNode: (key, _, value) => ({ key, typeOfChange: 'added', value }),
+    check: (valueBefore) => valueBefore === undefined,
+    makeNode: (key, _, value) => ({ key, type: 'added', value }),
   },
   {
-    check: (_, currentValue) => currentValue === undefined,
-    makeNode: (key, value) => ({ key, typeOfChange: 'removed', value }),
+    check: (_, valueAfter) => valueAfter === undefined,
+    makeNode: (key, value) => ({ key, type: 'removed', value }),
   },
   {
-    check: (previousValue, currentValue) => (
-      isPlainObject(previousValue) && isPlainObject(currentValue)
+    check: (valueBefore, valueAfter) => (
+      isPlainObject(valueBefore) && isPlainObject(valueAfter)
     ),
-    makeNode: (key, previousValue, currentValue, func) => (
-      { key, typeOfChange: 'updatedObject', value: func(previousValue, currentValue) }
+    makeNode: (key, valueBefore, valueAfter, func) => (
+      { key, type: 'complex', children: func(valueBefore, valueAfter) }
     ),
   },
   {
-    check: (previousValue, currentValue) => !isEqual(previousValue, currentValue),
-    makeNode: (key, previousValue, currentValue) => (
-      { key, typeOfChange: 'updated', value: [previousValue, currentValue] }
+    check: (valueBefore, valueAfter) => !isEqual(valueBefore, valueAfter),
+    makeNode: (key, valueBefore, valueAfter) => (
+      { key, type: 'updated', value: [valueBefore, valueAfter] }
     ),
   },
 ];
 
-const buildAst = (previousObj, currentObj) => {
-  const keys = union(flatten([previousObj, currentObj].map(Object.keys)));
-  return keys.reduce((acc, key) => {
-    const previous = previousObj[key];
-    const current = currentObj[key];
-    const { makeNode } = nodes.find(({ check }) => check(previous, current));
-    return [...acc, makeNode(key, previous, current, buildAst)];
-  }, []);
+const buildAst = (objectBefore, objectAfter) => {
+  const keys = union(flatten([objectBefore, objectAfter].map(Object.keys)));
+  const result = keys.flatMap((key) => {
+    const valueBefore = objectBefore[key];
+    const valueAfter = objectAfter[key];
+    const { makeNode } = nodes.find(({ check }) => check(valueBefore, valueAfter));
+    return [makeNode(key, valueBefore, valueAfter, buildAst)];
+  });
+  return sortBy(result, (item) => item.key);
 };
 
 export default (filepath1, filepath2, format) => {
   const objectsFromFiles = [filepath1, filepath2]
     .map((filepath) => path.resolve(process.cwd(), filepath))
-    .map((absolutePath) => [fs.readFileSync(absolutePath, 'utf-8'), getFileExtension(absolutePath)])
+    .map((absoluteFilepath) => [fs.readFileSync(absoluteFilepath, 'utf-8'), getFileExtension(absoluteFilepath)])
     .map(([fileData, fileExtension]) => getParser(fileExtension)(fileData));
   const ast = buildAst(...objectsFromFiles);
   return getFormatter(format)(ast);
