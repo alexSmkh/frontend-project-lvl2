@@ -24,7 +24,7 @@ There are three types of output formats: [stylish(by default)](#stylish), [plain
 
 #### Stylish:
 
-[![asciicast](https://asciinema.org/a/iktoeYlaFTXrWYl0q0Ep6jOLe.svg)](https://asciinema.org/a/iktoeYlaFTXrWYl0q0Ep6jOLe)
+[![asciicast](https://asciinema.org/a/AWQCetIFviPF7dBd5Wt1A1C9l.svg)](https://asciinema.org/a/AWQCetIFviPF7dBd5Wt1A1C9l)
 
 #### Plain
 
@@ -32,4 +32,4 @@ There are three types of output formats: [stylish(by default)](#stylish), [plain
 
 #### JSON
 
-[![asciicast](https://asciinema.org/a/1EnVwOp0F0qnmIVt2xsUe6Sxf.svg)](https://asciinema.org/a/1EnVwOp0F0qnmIVt2xsUe6Sxf)
+[![asciicast](https://asciinema.org/a/aD4iIchqzchrZ6SUM2jo87lJo.svg)](https://asciinema.org/a/aD4iIchqzchrZ6SUM2jo87lJo)
