@@ -1,11 +1,16 @@
 import lodash from 'lodash';
 
-const { isPlainObject, isArray } = lodash;
+const { isPlainObject, isArray, includes } = lodash;
 
 const baseIndent = '  ';
 const openingBracket = '{';
 const closingBracket = '}';
 const depthIncrementStep = 2;
+const signsForChanges = {
+  unchanged: ' ',
+  removed: '-',
+  added: '+',
+};
 
 const prepareValueForRender = (value, depth) => {
   if (!isPlainObject(value)) return value;
@@ -47,16 +52,8 @@ const nodesForRender = [
 
 const stringPatterns = [
   {
-    check: (type) => type === 'unchanged',
-    makeStringOfChanges: ({ key, value }, indent) => `${indent}  ${key}: ${value}`,
-  },
-  {
-    check: (type) => type === 'removed',
-    makeStringOfChanges: ({ key, value }, indent) => `${indent}- ${key}: ${value}`,
-  },
-  {
-    check: (type) => type === 'added',
-    makeStringOfChanges: ({ key, value }, indent) => `${indent}+ ${key}: ${value}`,
+    check: (type) => includes(Object.keys(signsForChanges), type),
+    makeStringOfChanges: ({ key, type, value }, indent) => `${indent}${signsForChanges[type]} ${key}: ${value}`,
   },
   {
     check: (type) => type === 'updated',
