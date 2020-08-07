@@ -1,58 +1,71 @@
 import lodash from 'lodash';
 
-const { isPlainObject, isArray } = lodash;
+const { isPlainObject } = lodash;
 
-const baseIndent = '    ';
+const baseIndent = '  ';
+const openingBracket = '{';
+const closingBracket = '}';
+const depthIncrementStep = 2;
 
-const formatValue = (value, depth) => {
+const renderObject = (value, depth) => {
   if (!isPlainObject(value)) return value;
   const indent = baseIndent.repeat(depth);
   const result = Object
     .keys(value)
-    .reduce((acc, key) => (
-      [...acc, `${indent}  ${key}: ${formatValue(value[key], depth + 1)}`]
-    ), ['{']);
-  result.push(`${baseIndent.repeat(depth - 1)}  }`);
-  return result.join('\n');
+    .flatMap((key) => (
+      `${indent}  ${key}: ${renderObject(value[key], depth + depthIncrementStep)}`
+    ));
+  const lastLine = `${baseIndent.repeat(depth - depthIncrementStep)}  ${closingBracket}`;
+  return [openingBracket, result.join('\n'), lastLine].join('\n');
 };
 
 const stringPatterns = [
   {
-    check: (typeOfChange) => typeOfChange === 'unchanged',
-    makeStringOfChanges: (key, indent, value) => `${indent}  ${key}: ${value}`,
+    check: (type) => type === 'unchanged',
+    makeStringOfChanges: ({ key, value }, depth) => {
+      const indent = baseIndent.repeat(depth);
+      return `${indent}  ${key}: ${renderObject(value, depth + depthIncrementStep)}`;
+    },
   },
   {
-    check: (typeOfChange) => typeOfChange === 'removed',
-    makeStringOfChanges: (key, indent, value) => `${indent}- ${key}: ${value}`,
+    check: (type) => type === 'removed',
+    makeStringOfChanges: ({ key, value }, depth) => {
+      const indent = baseIndent.repeat(depth);
+      return `${indent}- ${key}: ${renderObject(value, depth + depthIncrementStep)}`;
+    },
   },
   {
-    check: (typeOfChange) => typeOfChange === 'added',
-    makeStringOfChanges: (key, indent, value) => `${indent}+ ${key}: ${value}`,
+    check: (type) => type === 'added',
+    makeStringOfChanges: ({ key, value }, depth) => {
+      const indent = baseIndent.repeat(depth);
+      return `${indent}+ ${key}: ${renderObject(value, depth + depthIncrementStep)}`;
+    },
   },
   {
-    check: (typeOfChange) => typeOfChange === 'updated',
-    makeStringOfChanges: (key, indent, previous, current) => (
-      `${indent}+ ${key}: ${current}\n${indent}- ${key}: ${previous}`
-    ),
+    check: (type) => type === 'updated',
+    makeStringOfChanges: ({ key, value }, depth) => {
+      const [valueBefore, valueAfter] = value;
+      const indent = baseIndent.repeat(depth);
+      return `${indent}- ${key}: ${renderObject(valueBefore, depth + depthIncrementStep)}\n${indent}+ ${key}: ${renderObject(valueAfter, depth + depthIncrementStep)}`;
+    },
+  },
+  {
+    check: (type) => type === 'complex',
+    makeStringOfChanges: ({ key, children }, depth, func) => {
+      const complexValue = func(children, depth + 2).join('\n');
+      const indent = baseIndent.repeat(depth);
+      return `${indent}  ${key}: ${openingBracket}\n${complexValue}\n${indent}  ${closingBracket}`;
+    },
   },
 ];
 
 export default (ast) => {
-  const iter = (node, depth) => {
-    const indent = baseIndent.repeat(depth);
-    const result = node.flatMap(({ key, typeOfChange, value }) => {
-      if (typeOfChange === 'updatedObject') {
-        return `${indent}  ${key}: {\n${iter(value, depth + 1).join('\n')}\n${indent}  }`;
-      }
-      const { makeStringOfChanges } = stringPatterns.find(({ check }) => check(typeOfChange));
-      if (isArray(value)) {
-        const previous = formatValue(value[0], depth + 1);
-        const current = formatValue(value[1], depth + 1);
-        return makeStringOfChanges(key, indent, previous, current);
-      }
-      return makeStringOfChanges(key, indent, formatValue(value, depth + 1));
+  const iter = (nodes, depth) => {
+    const result = nodes.flatMap((node) => {
+      const { makeStringOfChanges } = stringPatterns.find(({ check }) => check(node.type));
+      return makeStringOfChanges(node, depth, iter);
     });
     return result;
   };
-  return ['{', ...iter(ast, 1), '}'].join('\n');
+  return [openingBracket, ...iter(ast, 1), closingBracket].join('\n');
 };
