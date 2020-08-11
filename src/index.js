@@ -6,7 +6,7 @@ import getParser from './parsers.js';
 import getFormatter from './formatters/index.js';
 
 const {
-  isPlainObject, isEqual, flatten, union, sortBy,
+  isPlainObject, isEqual, union,
 } = lodash;
 
 const getFileExtension = (filepath) => path.extname(filepath).slice(1);
@@ -41,14 +41,14 @@ const nodes = [
 ];
 
 const buildAst = (objectBefore, objectAfter) => {
-  const keys = Object.keys({ ...objectBefore, ...objectAfter });
-  const result = keys.flatMap((key) => {
+  const keys = union(lodash.keys(objectBefore), lodash.keys(objectAfter));
+  const sortedKeys = keys.sort();
+  return sortedKeys.flatMap((key) => {
     const valueBefore = objectBefore[key];
     const valueAfter = objectAfter[key];
     const { makeNode } = nodes.find(({ check }) => check(valueBefore, valueAfter));
     return [makeNode(key, valueBefore, valueAfter, buildAst)];
   });
-  return sortBy(result, (item) => item.key);
 };
 
 export default (filepath1, filepath2, format) => {
