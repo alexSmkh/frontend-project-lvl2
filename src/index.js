@@ -41,7 +41,7 @@ const nodes = [
 ];
 
 const buildAst = (objectBefore, objectAfter) => {
-  const keys = union(flatten([objectBefore, objectAfter].map(Object.keys)));
+  const keys = Object.keys({ ...objectBefore, ...objectAfter });
   const result = keys.flatMap((key) => {
     const valueBefore = objectBefore[key];
     const valueAfter = objectAfter[key];
