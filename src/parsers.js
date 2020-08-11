@@ -3,9 +3,9 @@ import yamlParser from 'js-yaml';
 import iniParser from 'ini';
 
 const parsers = {
-  json: (jsonData) => JSON.parse(jsonData),
-  ini: (iniData) => iniParser.parse(iniData),
-  yaml: (yamlData) => yamlParser.safeLoad(yamlData),
+  json: JSON.parse,
+  ini: iniParser.parse,
+  yaml: yamlParser.safeLoad,
 };
 
 export default (extension) => {
