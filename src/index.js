@@ -47,15 +47,25 @@ const buildAst = (objectBefore, objectAfter) => {
     const valueBefore = objectBefore[key];
     const valueAfter = objectAfter[key];
     const { makeNode } = nodes.find(({ check }) => check(valueBefore, valueAfter));
-    return [makeNode(key, valueBefore, valueAfter, buildAst)];
+    return makeNode(key, valueBefore, valueAfter, buildAst);
   });
 };
 
-export default (filepath1, filepath2, format) => {
-  const objectsFromFiles = [filepath1, filepath2]
-    .map((filepath) => path.resolve(process.cwd(), filepath))
-    .map((absoluteFilepath) => [fs.readFileSync(absoluteFilepath, 'utf-8'), getFileExtension(absoluteFilepath)])
-    .map(([fileData, fileExtension]) => getParser(fileExtension)(fileData));
-  const ast = buildAst(...objectsFromFiles);
+const readFile = (filepath) => {
+  const fullpath = path.resolve(process.cwd(), filepath);
+  return fs.readFileSync(fullpath, 'utf-8');
+};
+
+export default (filepathBefore, filepathAfter, format) => {
+  const fileExtensionBefore = getFileExtension(filepathBefore);
+  const fileDataBefore = readFile(filepathBefore);
+
+  const fileExtendionAfter = getFileExtension(filepathAfter);
+  const fileDataAfter = readFile(filepathAfter);
+
+  const parsedDataBefore = getParser(fileExtensionBefore)(fileDataBefore);
+  const parsedDataAfter = getParser(fileExtendionAfter)(fileDataAfter);
+
+  const ast = buildAst(parsedDataBefore, parsedDataAfter);
   return getFormatter(format)(ast);
 };
