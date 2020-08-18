@@ -18,21 +18,17 @@ const stringPatterns = {
   },
   removed: (propertyPath) => `Property ${renderPath(propertyPath)} was removed`,
   added: (propertyPath, { value }) => `Property ${renderPath(propertyPath)} was added with value: ${formatValue(value)}`,
-  complex: (propertyPath, { children }, func) => (
-    children.flatMap((child) => func(child, propertyPath))
-  ),
+  complex: (propertyPath, { children }, func) => func(children, propertyPath),
 };
 
-const render = (ast) => {
-  const iter = (node, path) => {
-    const currentPath = [...path, node.key];
-    const makeStringOfChanges = stringPatterns[node.type];
-    return makeStringOfChanges(currentPath, node, iter);
-  };
-  const result = ast
-    .flatMap((node) => iter(node, []))
-    .filter((line) => !!line);
-  return result.join('\n');
-};
+const render = (ast, path = []) => ast
+  .flatMap((node) => {
+    const { key, type } = node;
+    const currentPath = [...path, key];
+    const makeStringOfChanges = stringPatterns[type];
+    return makeStringOfChanges(currentPath, node, render);
+  })
+  .filter((line) => !!line)
+  .join('\n');
 
 export default render;
