@@ -11,7 +11,7 @@ const formatValue = (value) => {
 const renderPath = (path) => (path ? `'${path.join('.')}'` : '');
 
 const stringPatterns = {
-  unchanged: () => '',
+  unchanged: () => null,
   updated: (propertyPath, { value }) => {
     const [valueBefore, valueAfter] = value.map(formatValue);
     return `Property ${renderPath(propertyPath)} was updated. From ${valueBefore} to ${valueAfter}`;
@@ -31,7 +31,7 @@ const render = (ast) => {
   };
   const result = ast
     .flatMap((node) => iter(node, []))
-    .filter((line) => line !== '');
+    .filter((line) => !!line);
   return result.join('\n');
 };
 
