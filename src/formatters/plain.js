@@ -8,7 +8,7 @@ const formatValue = (value) => {
   return value;
 };
 
-const renderPath = (path) => (path ? `'${path.join('.')}'` : '');
+const renderPath = (path) => `'${path.join('.')}'`;
 
 const stringPatterns = {
   unchanged: () => null,
